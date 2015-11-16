@@ -14,10 +14,10 @@ _________________
 Quick start guide
 
 for linux: open terminal in the directory with the code
-#mkdir build
-#cd build
-#cmake ..
-#make
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
 
 This code compiles into two binaries -- ./demo, ./asms_vot
 ./demo  - run live demo with visual output
