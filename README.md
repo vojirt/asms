@@ -15,24 +15,21 @@ Quick start guide
 
 for linux: open terminal in the directory with the code
 
-$ mkdir build
+$ mkdir build; cd build; cmake .. ; make
 
-$ cd build
+This code compiles into two binaries **demo** and **asms_vot**
 
-$ cmake ..
+./demo  
+-run live demo with visual output
+-control : object is selected by mouse, click and drag mouse to select rectandle
+  -ESC = quit
+  -i = init new object
 
-$ make
-
-This code compiles into two binaries -- ./demo, ./asms_vot
-./demo  - run live demo with visual output
-        - control : object is selected by mouse, click and drag mouse to select rectandle
-                    ESC = quit
-                    i = init new object
-
-./asms_vot - using VOT 2013 methodology (http://www.votchallenge.net/)
-           INPUT : expecting two files, images.txt (list of sequence images with absolute path) and 
+./asms_vot 
+-using VOT 2013 methodology (http://www.votchallenge.net/)
+ -INPUT : expecting two files, images.txt (list of sequence images with absolute path) and 
                    region.txt with initial bounding box in the first frame in format "top_left_x, top_left_y, width, height"
-           OUTPUT : output.txt containing the bounding boxes in the same format as region.txt
+ -OUTPUT : output.txt containing the bounding boxes in the same format as region.txt
 
 __________
 References
