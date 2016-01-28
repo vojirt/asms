@@ -31,6 +31,40 @@ void ColorTracker::init(cv::Mat & img, int x1, int y1, int x2, int y2)
     defaultHeight = y2-y1;
     sumIter = 0;
     frame = 0;
+
+
+    double w2 = (x2-x1)/2.;
+    double h2 = (y2-y1)/2.;
+    double cx = x1 + w2;
+    double cy = y1 + h2;
+    double wh = w2+5.;
+    double hh = h2+5.;
+
+    double Sbg = 0, Sfg = 0;
+    for(int i = y1; i < y2+1; i++) {
+        const uchar *Mi1 = im1.ptr<uchar>(i);
+        const uchar *Mi2 = im2.ptr<uchar>(i);
+        const uchar *Mi3 = im3.ptr<uchar>(i);
+        double tmp_y = std::pow((cy - i) / hh, 2);
+        for (int j = x1; j < x1 + 1; j++) {
+            double arg = std::pow((cx - j) / wh, 2) + tmp_y;
+            if (arg > 1)
+                continue;
+            //likelihood weights
+            double wqi = 1.0;
+            double wbi = sqrt(b_hist.getValue(Mi1[j], Mi2[j], Mi3[j]) /
+                              q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j]));
+            Sbg += (wqi < wbi) ? q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j])
+                               : 0.0;
+            Sfg += q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j]);
+        }
+    }
+
+    //wAvgBg = 0.5
+    wAvgBg = std::max(0.1, std::min(Sbg/Sfg, 0.5));
+    bound1 = 0.05;
+    bound2 = 0.1;
+
 }
 
 cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2)
@@ -43,8 +77,8 @@ cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2
     double borderX = 5;
     double borderY = 5;
 
-    float cx = x1 + w2;
-    float cy = y1 + h2;
+    double cx = x1 + w2;
+    double cy = y1 + h2;
 
     Histogram y1hist;
 
@@ -87,8 +121,8 @@ cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2
             }
         }
 
-        float xn_1 = m1x/m0 + cx;
-        float yn_1 = m1y/m0 + cy;
+        double xn_1 = m1x/m0 + cx;
+        double yn_1 = m1y/m0 + cy;
 
         if (std::pow(xn_1 - cx,2) + std::pow(yn_1 - cy,2) < 0.1)
             break;
@@ -112,8 +146,8 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
     double borderX = 5;
     double borderY = 5;
 
-    float cx = x1 + w2;
-    float cy = y1 + h2;
+    double cx = x1 + w2;
+    double cy = y1 + h2;
 
     Histogram y1hist;
     double h0 = 1;
@@ -143,9 +177,9 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
             const uchar* Mi1 = im1.ptr<uchar>(i);
             const uchar* Mi2 = im2.ptr<uchar>(i);
             const uchar* Mi3 = im3.ptr<uchar>(i);
-            double tmp_y = std::pow((cy-(float)i)/hh,2);
+            double tmp_y = std::pow((cy-i)/hh,2);
             for(int j = colMin; j < colMax; j++){
-                double arg = std::pow((cx-(float)j)/wh,2) + tmp_y;
+                double arg = std::pow((cx-j)/wh,2) + tmp_y;
                 if (arg>1)
                     continue;
 
@@ -184,16 +218,11 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
             }
         }
 
-        float xn_1 = m1x/m0 + cx;
-        float yn_1 = m1y/m0 + cy;
-
+        double xn_1 = m1x/m0 + cx;
+        double yn_1 = m1y/m0 + cy;
 
         //Rebularization
         double reg2 = 0, reg1 = 0;
-        double wAvgBg = 0.5;
-        double bound1 = 0.05;
-        double bound2 = 0.1;
-
         reg1 = (wAvgBg - Sbg/Sfg);
         if (std::abs(reg1) > bound1)
             reg1 = reg1 > 0 ? bound1 : -bound1;

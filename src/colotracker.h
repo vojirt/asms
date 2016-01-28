@@ -33,6 +33,10 @@ private:
     double defaultWidth;
     double defaultHeight;
 
+    double wAvgBg;
+    double bound1;
+    double bound2;
+
     cv::Point histMeanShift(double x1, double y1, double x2, double y2);
     cv::Point histMeanShiftIsotropicScale(double x1, double y1, double x2, double y2, double * scale, int * msIter = NULL);
 
