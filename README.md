@@ -26,7 +26,7 @@ This code compiles into two binaries **demo** and **asms_vot**
   - i = init new object
 
 ./asms_vot 
-- using VOT 2013 methodology (http://www.votchallenge.net/)
+- using VOT 2015 methodology (http://www.votchallenge.net/), is backward compatible with older ones
  - INPUT : expecting two files, images.txt (list of sequence images with absolute path) and 
                    region.txt with initial bounding box in the first frame in format "top_left_x, top_left_y, width, height"
  - OUTPUT : output.txt containing the bounding boxes in the same format as region.txt
