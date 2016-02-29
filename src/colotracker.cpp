@@ -259,6 +259,129 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
     return  cv::Point(cx, cy);
 }
 
+cv::Point ColorTracker::histMeanShiftAnisotropicScale(double x1, double y1, double x2, double y2, double * width, double * height)
+{
+    int maxIter = 15;
+
+    double w2 = (x2-x1)/2.;
+    double h2 = (y2-y1)/2.;
+
+    double borderX = 5.;
+    double borderY = 5.;
+
+    double cx = x1 + w2;
+    double cy = y1 + h2;
+    double h0_1 = 1.;
+    double h0_2 = 1.;
+
+    double wh;
+    double hh;
+
+    Histogram y1hist;
+
+    int ii;
+    for (ii = 0; ii < maxIter; ++ii){
+
+        wh = w2*h0_1+borderX;
+        hh = h2*h0_2+borderY;
+        int rowMin = std::max(0, (int)(cy-hh));
+        int rowMax = std::min(im1.rows-1, (int)(cy+hh));
+        int colMin = std::max(0, (int)(cx-wh));
+        int colMax = std::min(im1.cols-1, (int)(cx+wh));
+
+        extractForegroundHistogram(colMin, rowMin, colMax, rowMax, y1hist);
+
+        double batta_q = y1hist.computeSimilarity(&q_orig_hist);
+        double batta_b = y1hist.computeSimilarity(&b_hist);
+
+        //MeanShift Vector
+        double m0 = 0, m1x = 0, m1y = 0;
+        double Swigdist_1 = 0, Swigdist_2 = 0;
+        double wk_sum = 0, Sbg = 0, Sfg = 0;
+
+        for(int i = rowMin; i < rowMax; i++){
+            const uchar* Mi1 = im1.ptr<uchar>(i);
+            const uchar* Mi2 = im2.ptr<uchar>(i);
+            const uchar* Mi3 = im3.ptr<uchar>(i);
+            double tmp_y = std::pow((cy-(float)i)/hh,2);
+
+            for(int j = colMin; j < colMax; j++){
+                double arg = std::pow((cx-(float)j)/wh,2) + tmp_y;
+                if (arg>1)
+                    continue;
+
+                //likelihood weights
+                double wqi = sqrt(q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j])/y1hist.getValue(Mi1[j], Mi2[j], Mi3[j]));
+                double wbi = sqrt(b_hist.getValue(Mi1[j], Mi2[j], Mi3[j])/y1hist.getValue(Mi1[j], Mi2[j], Mi3[j]));
+                double w = std::max(wqi/batta_q - wbi/batta_b, 0.0);
+
+                double wg = w*(-kernelProfile_EpanechnikovDeriv(arg));
+
+                wk_sum += (w * kernelProfile_Epanechnikov(arg));
+                Swigdist_1 += wg*std::pow((cx-(float)j),2);
+                Swigdist_2 += wg*std::pow((cy-(float)i),2);
+
+                //likelihood
+                Sbg += (wqi < wbi) ? y1hist.getValue(Mi1[j], Mi2[j], Mi3[j]) : 0;
+                Sfg += q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j]);
+
+                m0 += wg;
+                m1x += (j-cx)*wg;
+                m1y += (i-cy)*wg;
+            }
+        }
+
+        double a2 = std::pow(w2,2);
+        double b2 = std::pow(h2,2);
+
+        float mx = (h0_2/h0_1)*(m1x/m0);
+        float my = (h0_1/h0_2)*(m1y/m0);
+
+        double wAvgBg = 0.2;
+        double bound1 = 0.05;
+        double bound2 = 0.1;
+
+        double reg1 = (wAvgBg - Sbg/Sfg);
+        if (std::abs(reg1) > bound1)
+            reg1 = reg1 > 0 ? bound1 : -bound1;
+
+        double reg2_1 = -(log(h0_1));
+        if (std::abs(reg2_1) > bound2)
+            reg2_1 = reg2_1 > 0 ? bound2 : -bound2;
+        double reg2_2 = -(log(h0_2));
+        if (std::abs(reg2_2) > bound2)
+            reg2_2 = reg2_2 > 0 ? bound2 : -bound2;
+
+        double h_1 = h0_1 - (h0_2/2)*(wk_sum / m0) + (h0_2 / (h0_1 * h0_1 * a2)) * (Swigdist_1 / m0) + reg1 + reg2_1;
+        double h_2 = h0_2 - (h0_1/2)*(wk_sum / m0) + (h0_1 / (h0_2 * h0_2 * b2)) * (Swigdist_2 / m0) + reg1 + reg2_2;
+
+        if (std::pow(mx,2) + std::pow(my,2) < 0.1)
+            break;
+
+        if (m0==m0 && !isinf(m0) && m0 > 0){
+            cx = cx + mx;
+            cy = cy + my;
+            h0_1 = 0.7*h0_1 + 0.3*h_1;
+            h0_2 = 0.7*h0_2 + 0.3*h_2;
+            if (borderX > 5){
+                borderX /= 3;
+                borderY /= 3;
+            }
+        }else if (ii == 0){
+            //if in first iteration is m0 not valid => fail (maybe too fast movement)
+            //  try to enlarge the search region
+            borderX = 3*borderX;
+            borderY = 3*borderY;
+        }
+    }
+
+    *width = 2*w2*h0_1;
+    *height = 2*h2*h0_2;
+
+    return  cv::Point(cx, cy);
+}
+
+
 
 BBox * ColorTracker::track(cv::Mat & img, double x1, double y1, double x2, double y2)
 {
@@ -276,6 +399,13 @@ BBox * ColorTracker::track(cv::Mat & img, double x1, double y1, double x2, doubl
     cv::Point modeCenter = histMeanShiftIsotropicScale(x1, y1, x2, y2, &scale, &iter);
     width = 0.7*width + 0.3*width*scale;
     height = 0.7*height + 0.3*height*scale;
+
+    //MS with anisotropic scale estimation
+    // double scale = 1.; 
+    // double new_width = 1., new_height = 1.;
+    // cv::Point modeCenter = histMeanShiftAnisotropicScale(x1, y1, x2, y2, &new_width, &new_height);
+    // width = new_width;
+    // height = new_height;
     
     //Forward-Backward validation
     if (std::abs(std::log(scale)) > 0.05){

@@ -39,6 +39,7 @@ private:
 
     cv::Point histMeanShift(double x1, double y1, double x2, double y2);
     cv::Point histMeanShiftIsotropicScale(double x1, double y1, double x2, double y2, double * scale, int * msIter = NULL);
+    cv::Point histMeanShiftAnisotropicScale(double x1, double y1, double x2, double y2, double * width, double * height);
 
     void preprocessImage(cv::Mat & img);
     void extractBackgroundHistogram(int x1, int y1, int x2, int y2, Histogram &hist);
