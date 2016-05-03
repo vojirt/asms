@@ -337,10 +337,6 @@ cv::Point ColorTracker::histMeanShiftAnisotropicScale(double x1, double y1, doub
         float mx = (h0_2/h0_1)*(m1x/m0);
         float my = (h0_1/h0_2)*(m1y/m0);
 
-        double wAvgBg = 0.2;
-        double bound1 = 0.05;
-        double bound2 = 0.1;
-
         double reg1 = (wAvgBg - Sbg/Sfg);
         if (std::abs(reg1) > bound1)
             reg1 = reg1 > 0 ? bound1 : -bound1;
