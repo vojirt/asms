@@ -5,6 +5,7 @@
 #include <string>
 #include <limits>
 #include <trax/opencv.hpp>
+#include <memory>
 
 using namespace cv;
 
@@ -13,14 +14,13 @@ int main(int, char **)
     trax::Image img;
     trax::Region reg;
 
-    cv::Ptr<ColorTracker> tracker;
+    cv::unique_ptr<ColorTracker> tracker;
     cv::Mat image;
 	cv::Rect rectangle;
 
     trax::Server handle(trax::Configuration(TRAX_IMAGE_PATH | TRAX_IMAGE_MEMORY | TRAX_IMAGE_BUFFER, TRAX_REGION_RECTANGLE), trax_no_log);
 
-    while(true)
-    {
+    while(true) {
 
         trax::Properties prop;
         trax::Region status;
@@ -28,11 +28,10 @@ int main(int, char **)
         int tr = handle.wait(img, reg, prop);
 
         if (tr == TRAX_INITIALIZE) {
-
             rectangle = trax::region_to_rect(reg);
             image = trax::image_to_mat(img);
 
-            tracker = new ColorTracker();
+            tracker.reset(new ColorTracker());
 
 			tracker->init(image, rectangle.x, rectangle.y, rectangle.x + rectangle.width, rectangle.y + rectangle.height);
 
@@ -46,6 +45,7 @@ int main(int, char **)
             if (bb != NULL) {
 			    rectangle = cv::Rect(bb->x, bb->y, bb->width, bb->height);
                 status = trax::rect_to_region(rectangle);
+                delete bb;
             } else {
                 status = trax::Region::create_special(0);
             }
