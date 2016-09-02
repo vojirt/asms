@@ -14,7 +14,7 @@ int main(int, char **)
     trax::Image img;
     trax::Region reg;
 
-    cv::unique_ptr<ColorTracker> tracker;
+    std::unique_ptr<ColorTracker> tracker;
     cv::Mat image;
 	cv::Rect rectangle;
 
