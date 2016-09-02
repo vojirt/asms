@@ -31,6 +31,9 @@ This code compiles into two binaries **demo** and **asms_vot**
                    region.txt with initial bounding box in the first frame in format "top_left_x, top_left_y, width, height"
  - OUTPUT : output.txt containing the bounding boxes in the same format as region.txt
 
+./asms_trax
+- using VOT2014+ trax protocol
+
 __________
 References
 
