@@ -19,7 +19,7 @@ $ mkdir build; cd build; cmake .. ; make
 
 This code compiles into two binaries **demo** and **asms_vot**
 
-./demo  
+./asms_demo  
 - run live demo with visual output
 - control : object is selected by mouse, click and drag mouse to select rectandle
   - ESC = quit
@@ -33,6 +33,9 @@ This code compiles into two binaries **demo** and **asms_vot**
 
 ./asms_trax
 - using VOT2014+ trax protocol
+- require [trax](https://github.com/votchallenge/trax) library to be compiled
+  with opencv support and installed. See trax instruction for compiling and
+  installing.
 
 __________
 References
