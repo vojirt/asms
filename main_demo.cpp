@@ -1,5 +1,6 @@
 #include <iostream>
-#include "cv.h"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "highgui.h"
 #include "colotracker.h"
 #include "region.h"
@@ -14,7 +15,7 @@ bool plot = false;
 bool g_trackerInitialized = false;
 ColorTracker * g_tracker = NULL;
 
-static void onMouse( int event, int x, int y, int flags, void* param)
+static void onMouse( int event, int x, int y, int, void* param)
 {
     cv::Mat img = ((cv::Mat *)param)->clone();
     if( event == cv::EVENT_LBUTTONDOWN && !g_trackerInitialized){

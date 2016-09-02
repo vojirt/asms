@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(tracker)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -O3 -Wno-long-long") ##-g -fno-omit-frame-pointer")
+  
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3")
+if(CMAKE_COMPILER_IS_GNUCXX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wextra -pedantic -Wno-long-long")
+endif()
 
 FIND_PACKAGE( OpenCV REQUIRED )
 link_directories ( ${OpenCV_LIB_DIR} )
@@ -18,5 +21,17 @@ add_subdirectory(src)
 add_executable(asms_vot main_vot.cpp)
 target_link_libraries(asms_vot ${OpenCV_LIBS} color)
 
-add_executable(demo main_demo.cpp )
-target_link_libraries(demo ${OpenCV_LIBS} color )
+add_executable(asms_demo main_demo.cpp )
+target_link_libraries(asms_demo ${OpenCV_LIBS} color )
+
+# Try to find TraX header and library ...
+FIND_FILE(TRAX_HEADER NAMES trax.h)
+IF (EXISTS ${TRAX_HEADER})
+    GET_FILENAME_COMPONENT(TRAX_DIR ${TRAX_HEADER} DIRECTORY)
+    LINK_DIRECTORIES(${TRAX_DIR}) # Add library directory
+    INCLUDE_DIRECTORIES(${TRAX_DIR}) # Add includes directory
+
+    add_executable(asms_trax main_trax.cpp)
+    target_link_libraries(asms_trax ${OpenCV_LIBS} color trax trax_opencv)
+ENDIF()
+

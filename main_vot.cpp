@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cv.h"
+#include <opencv2/imgproc/imgproc.hpp>
 #include "colotracker.h"
 #include "region.h"
 #include <string>
