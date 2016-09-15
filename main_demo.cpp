@@ -13,7 +13,9 @@ cv::Point g_botRight(0,0);
 cv::Point g_botRight_tmp(0,0);
 bool plot = false;
 bool g_trackerInitialized = false;
-ColorTracker * g_tracker = NULL;
+ColorTracker *g_tracker = NULL;
+
+
 
 static void onMouse( int event, int x, int y, int, void* param)
 {
@@ -29,7 +31,7 @@ static void onMouse( int event, int x, int y, int, void* param)
         if (g_tracker != NULL)
             delete g_tracker;
         g_tracker = new ColorTracker();
-        g_tracker->init(*(cv::Mat *)param, g_topLeft.x, g_topLeft.y, g_botRight.x, g_botRight.y);
+        g_tracker->init(*(cv::Mat *)param, Rect2d(g_topLeft.x, g_topLeft.y, g_botRight.x - g_topLeft.x, g_botRight.y - g_topLeft.y));
         g_trackerInitialized = true;
     }else if (event == cv::EVENT_MOUSEMOVE && !g_trackerInitialized){
         //plot bbox
@@ -83,7 +85,10 @@ int main(int argc, char **argv)
         }
 
         if (g_trackerInitialized && g_tracker != NULL){
-            bb = g_tracker->track(img);
+            if (bb == NULL) {
+              bb = new Rect2d();
+            }
+            g_tracker->update(img, *bb);
         }
 
         if (!g_trackerInitialized && plot && g_botRight_tmp.x > 0){
