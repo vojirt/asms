@@ -10,9 +10,9 @@ bool ColorTracker::initImpl(const cv::Mat & img, const cv::Rect2d & initial)
 
     //boundary checks
     const double y1 = std::max(0.0, initial.y);
-    const double y2 = std::min(img.rows-1.0, initial.y + initial.width);
+    const double y2 = std::min(img.rows-1.0, initial.y + initial.height);
     const double x1 = std::max(0.0, initial.x);
-    const double x2 = std::min(img.cols-1.0, initial.x + initial.height);
+    const double x2 = std::min(img.cols-1.0, initial.x + initial.width);
 
     preprocessImage(img);
 
