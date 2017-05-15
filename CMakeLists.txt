@@ -25,13 +25,16 @@ add_executable(asms_demo main_demo.cpp )
 target_link_libraries(asms_demo ${OpenCV_LIBS} color )
 
 # Try to find TraX header and library ...
-FIND_FILE(TRAX_HEADER NAMES trax.h)
-IF (EXISTS ${TRAX_HEADER})
-    GET_FILENAME_COMPONENT(TRAX_DIR ${TRAX_HEADER} DIRECTORY)
-    LINK_DIRECTORIES(${TRAX_DIR}) # Add library directory
-    INCLUDE_DIRECTORIES(${TRAX_DIR}) # Add includes directory
+FIND_PACKAGE(trax REQUIRED COMPONENTS core opencv)
+IF (trax_FOUND)
+    MESSAGE(STATUS "Trax protocol found: building asms_trax")
+    INCLUDE_DIRECTORIES(${TRAX_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${TRAX_LIBRARY_DIRS})
 
     add_executable(asms_trax main_trax.cpp)
-    target_link_libraries(asms_trax ${OpenCV_LIBS} color trax trax_opencv)
+    target_link_libraries(asms_trax ${OpenCV_LIBS} color ${TRAX_LIBRARIES})
 ENDIF()
+
+
+
 
