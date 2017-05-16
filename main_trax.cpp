@@ -18,7 +18,7 @@ int main(int, char **)
     cv::Mat image;
 	cv::Rect rectangle;
 
-    trax::Server handle(trax::Configuration(TRAX_IMAGE_PATH | TRAX_IMAGE_MEMORY | TRAX_IMAGE_BUFFER, TRAX_REGION_RECTANGLE), trax_no_log);
+    trax::Server handle(trax::Metadata(TRAX_REGION_RECTANGLE, TRAX_IMAGE_PATH), trax_no_log);
 
     while(true) {
 
