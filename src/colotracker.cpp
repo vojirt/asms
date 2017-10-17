@@ -112,8 +112,8 @@ cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2
 
                 double wqi = sqrt(q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j])/y1hist.getValue(Mi1[j], Mi2[j], Mi3[j]));
                 double wbi = sqrt(b_hist.getValue(Mi1[j], Mi2[j], Mi3[j])/y1hist.getValue(Mi1[j], Mi2[j], Mi3[j]));
-                
-                double wg = std::max(wqi/batta_q - wbi/batta_b, 0.0)*(-kernelProfile_EpanechnikovDeriv(arg));     
+
+                double wg = std::max(wqi/batta_q - wbi/batta_b, 0.0)*(-kernelProfile_EpanechnikovDeriv(arg));
 
                 m0 += wg;
                 m1x += (j-cx)*wg;
@@ -127,7 +127,7 @@ cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2
         if (std::pow(xn_1 - cx,2) + std::pow(yn_1 - cy,2) < 0.1)
             break;
 
-        if (m0==m0 && !isinf(m0) && m0 > 0){
+        if (m0==m0 && !std::isinf(m0) && m0 > 0){
             cx = xn_1;
             cy = yn_1;
         }
@@ -194,7 +194,7 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
                 //orig weights
                 // double w = sqrt(q_orig_hist.getValue(Mi1[j], Mi2[j], Mi3[j])/y1hist.getValue(Mi1[j], Mi2[j], Mi3[j]));
 
-                double wg = w*(-kernelProfile_EpanechnikovDeriv(arg));     
+                double wg = w*(-kernelProfile_EpanechnikovDeriv(arg));
                 double dist = std::sqrt(std::pow((j-cx)/w2,2) + std::pow((i-cy)/h2,2));
 
                 wg_dist_sum += wg*dist;
@@ -230,13 +230,13 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
         reg2 = -(log(h0));
         if (std::abs(reg2) > bound2)
             reg2 = reg2 > 0 ? bound2 : -bound2;
-        
+
         double h_tmp = (1.0 - wk_sum/m0)*h0 + (1.0/h0)*(wg_dist_sum/m0) + reg1 + reg2;
-                
+
         if (std::pow(xn_1 - cx,2) + std::pow(yn_1 - cy,2) < 0.1)
             break;
 
-        if (m0==m0 && !isinf(m0) && m0 > 0){
+        if (m0==m0 && !std::isinf(m0) && m0 > 0){
             cx = xn_1;
             cy = yn_1;
             h0 = 0.7*h0 + 0.3*h_tmp;
@@ -244,8 +244,8 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
                 borderX /= 3;
                 borderY /= 3;
             }
-        }else if (ii == 0){     
-            //if in first iteration is m0 not valid => fail (maybe too fast movement) 
+        }else if (ii == 0){
+            //if in first iteration is m0 not valid => fail (maybe too fast movement)
             //  try to enlarge the search region
             borderX = 3*borderX;
             borderY = 3*borderY;
@@ -354,7 +354,7 @@ cv::Point ColorTracker::histMeanShiftAnisotropicScale(double x1, double y1, doub
         if (std::pow(mx,2) + std::pow(my,2) < 0.1)
             break;
 
-        if (m0==m0 && !isinf(m0) && m0 > 0){
+        if (m0==m0 && !std::isinf(m0) && m0 > 0){
             cx = cx + mx;
             cy = cy + my;
             h0_1 = 0.7*h0_1 + 0.3*h_1;
@@ -390,19 +390,19 @@ BBox * ColorTracker::track(cv::Mat & img, double x1, double y1, double x2, doubl
     preprocessImage(img);
 
     //MS with scale estimation
-    double scale = 1; 
+    double scale = 1;
     int iter = 0;
     cv::Point modeCenter = histMeanShiftIsotropicScale(x1, y1, x2, y2, &scale, &iter);
     width = 0.7*width + 0.3*width*scale;
     height = 0.7*height + 0.3*height*scale;
 
     //MS with anisotropic scale estimation
-    // double scale = 1.; 
+    // double scale = 1.;
     // double new_width = 1., new_height = 1.;
     // cv::Point modeCenter = histMeanShiftAnisotropicScale(x1, y1, x2, y2, &new_width, &new_height);
     // width = new_width;
     // height = new_height;
-    
+
     //Forward-Backward validation
     if (std::abs(std::log(scale)) > 0.05){
         cv::Mat tmp_im1 = im1;
@@ -471,7 +471,7 @@ void ColorTracker::extractBackgroundHistogram(int x1, int y1, int x2, int y2, Hi
             d3.push_back(M3[x]);
         }
     }
-    hist.clear();    
+    hist.clear();
     hist.insertValues(d1, d2, d3, weights);
 }
 
