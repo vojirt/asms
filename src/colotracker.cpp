@@ -127,7 +127,7 @@ cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2
         if (std::pow(xn_1 - cx,2) + std::pow(yn_1 - cy,2) < 0.1)
             break;
 
-        if (m0==m0 && !isinf(m0) && m0 > 0){
+        if (m0==m0 && !std::isinf(m0) && m0 > 0){
             cx = xn_1;
             cy = yn_1;
         }
@@ -236,7 +236,7 @@ cv::Point ColorTracker::histMeanShiftIsotropicScale(double x1, double y1, double
         if (std::pow(xn_1 - cx,2) + std::pow(yn_1 - cy,2) < 0.1)
             break;
 
-        if (m0==m0 && !isinf(m0) && m0 > 0){
+        if (m0==m0 && !std::isinf(m0) && m0 > 0){
             cx = xn_1;
             cy = yn_1;
             h0 = 0.7*h0 + 0.3*h_tmp;
@@ -354,7 +354,7 @@ cv::Point ColorTracker::histMeanShiftAnisotropicScale(double x1, double y1, doub
         if (std::pow(mx,2) + std::pow(my,2) < 0.1)
             break;
 
-        if (m0==m0 && !isinf(m0) && m0 > 0){
+        if (m0==m0 && !std::isinf(m0) && m0 > 0){
             cx = cx + mx;
             cy = cy + my;
             h0_1 = 0.7*h0_1 + 0.3*h_1;
