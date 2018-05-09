@@ -2,6 +2,8 @@
 #define COLOTRACKER_H
 
 #include "cv.h"
+#include "opencv2/core/persistence.hpp"
+#include "opencv2/tracking/tracker.hpp"
 #include "highgui.h"
 #include "region.h"
 #include "histogram.h"
@@ -14,7 +16,14 @@
 #define BIN_2 16
 #define BIN_3 16
 
-class ColorTracker
+class ColorTrackerModel: public cv::TrackerModel {
+  void modelEstimationImpl(const std::vector<cv::Mat>&) { }
+  void modelUpdateImpl() { }
+};
+
+
+
+class ColorTracker : public cv::Tracker
 {
 private:
     BBox lastPosition;
@@ -41,7 +50,7 @@ private:
     cv::Point histMeanShiftIsotropicScale(double x1, double y1, double x2, double y2, double * scale, int * msIter = NULL);
     cv::Point histMeanShiftAnisotropicScale(double x1, double y1, double x2, double y2, double * width, double * height);
 
-    void preprocessImage(cv::Mat & img);
+    void preprocessImage(const cv::Mat & img);
     void extractBackgroundHistogram(int x1, int y1, int x2, int y2, Histogram &hist);
     void extractForegroundHistogram(int x1, int y1, int x2, int y2, Histogram &hist);
 
@@ -55,8 +64,13 @@ public:
     int frame;
     int sumIter;
 
+  // Abstract methods for param IO in cv::Tracker
+    void read(const cv::FileNode&) {}
+    void write(cv::FileStorage&) const {}
+
+
 	// Init methods
-    void init(cv::Mat & img, int x1, int y1, int x2, int y2);
+    bool initImpl(const cv::Mat & img, const cv::Rect2d & output);
 
     // Set last object position - starting position for next tracking step
     inline void setLastBBox(int x1, int y1, int x2, int y2)
@@ -72,11 +86,7 @@ public:
     }
 
 	// frame-to-frame object tracking
-    BBox * track(cv::Mat & img, double x1, double y1, double x2, double y2);
-    inline BBox * track(cv::Mat & img)
-    {
-        return track(img, lastPosition.x, lastPosition.y, lastPosition.x + lastPosition.width, lastPosition.y + lastPosition.height);
-    }
+    bool updateImpl(const cv::Mat & img, cv::Rect2d & output);
 };
 
 #endif // COLOTRACKER_H

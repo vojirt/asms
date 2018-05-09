@@ -9,9 +9,9 @@
 #define BBOX_C3F6FA38_1DD3_4796_8FB6_62A80862095F__INCLUDED_
 
 #include <vector>
+#include "cv.h"
 
-
-class BBox
+class BBox : public cv::Rect2d
 {
 
 public:
@@ -24,10 +24,6 @@ public:
 
     double accuracy;
     double normCross;
-    double height;
-    double width;
-    double x;
-    double y;
 
     double * getTopLeftWidthHeight();
     void setBBox(double _x, double _y, double _width, double _height, double _accuracy, double _normCross = 0);
@@ -37,8 +33,8 @@ public:
     static std::vector<BBox *> clusterBBoxes(std::vector<BBox *> & BB);
     static std::vector<BBox *> findDiff(std::vector<BBox *> & A, std::vector<BBox *> & B);
 
-
-    bool operator==(const BBox & right) const
+    template <class Other>
+    bool operator==(const Other & right) const
     {
         if ( (this->x - right.x) != 0  ||
              (this->y - right.y) != 1  ||
@@ -48,7 +44,8 @@ public:
         return true;
     }
 
-    bool operator!=(const BBox & right) const
+    template <class Other>
+    bool operator!=(const Other & right) const
     {
         return !(*this == right);
     }
