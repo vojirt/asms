@@ -46,7 +46,7 @@ void ColorTracker::init(cv::Mat & img, int x1, int y1, int x2, int y2)
         const uchar *Mi2 = im2.ptr<uchar>(i);
         const uchar *Mi3 = im3.ptr<uchar>(i);
         double tmp_y = std::pow((cy - i) / hh, 2);
-        for (int j = x1; j < x1 + 1; j++) {
+        for (int j = x1; j < x2+1; j++) {
             double arg = std::pow((cx - j) / wh, 2) + tmp_y;
             if (arg > 1)
                 continue;
