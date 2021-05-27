@@ -9,16 +9,16 @@
 
 using namespace cv;
 
-int main(int, char **) 
+int main(int, char **)
 {
-    trax::Image img;
+    trax::ImageList img;
     trax::Region reg;
 
     std::unique_ptr<ColorTracker> tracker;
     cv::Mat image;
 	cv::Rect rectangle;
 
-    trax::Server handle(trax::Metadata(TRAX_REGION_RECTANGLE, TRAX_IMAGE_PATH), trax_no_log);
+    trax::Server handle(trax::Metadata(TRAX_REGION_RECTANGLE, TRAX_IMAGE_PATH | TRAX_IMAGE_MEMORY | TRAX_IMAGE_BUFFER, TRAX_CHANNEL_COLOR), trax_no_log);
 
     while(true) {
 
@@ -29,7 +29,7 @@ int main(int, char **)
 
         if (tr == TRAX_INITIALIZE) {
             rectangle = trax::region_to_rect(reg);
-            image = trax::image_to_mat(img);
+            image = trax::image_to_mat(img.get(TRAX_CHANNEL_COLOR));
 
             tracker.reset(new ColorTracker());
 
@@ -39,7 +39,7 @@ int main(int, char **)
 
         } else if (tr == TRAX_FRAME) {
 
-            image = trax::image_to_mat(img);
+            image = trax::image_to_mat(img.get(TRAX_CHANNEL_COLOR));
 			BBox* bb = tracker->track(image);
 
             if (bb != NULL) {
