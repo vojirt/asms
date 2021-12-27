@@ -23,21 +23,23 @@ int main(int, char **)
     vot_io.getNextImage(image);
 
     //tracker initialization
-    tracker.init(image, init_rect.x, init_rect.y, init_rect.x + init_rect.width, init_rect.y + init_rect.height);
+    tracker.init(image, init_rect);
 
     //track   
     double average_speed_ms = 0.0;
     double num_frames = 0.0;
     while (vot_io.getNextImage(image) == 1){
+        Rect2d bb;
         double time_profile_counter = cv::getCPUTickCount();
-        BBox * bb = tracker.track(image);
+
+        bool success = tracker.update(image, bb);
+
         time_profile_counter = cv::getCPUTickCount() - time_profile_counter;
         average_speed_ms += time_profile_counter/((double)cvGetTickFrequency()*1000);
         num_frames += 1.0;
 
-        if (bb != NULL){
-            vot_io.outputBoundingBox(cv::Rect(bb->x, bb->y, bb->width, bb->height));
-            delete bb;
+        if (success){
+            vot_io.outputBoundingBox(cv::Rect(bb.x, bb.y, bb.width, bb.height));
         } else {
             vot_io.outputBoundingBox(cv::Rect(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN()));
         }

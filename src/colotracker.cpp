@@ -2,17 +2,17 @@
 #include <iostream>
 #include <fstream>
 
-void ColorTracker::init(cv::Mat & img, int x1, int y1, int x2, int y2)
+bool ColorTracker::initImpl(const cv::Mat & img, const cv::Rect2d & initial)
 {
     im1 = cv::Mat( img.rows, img.cols, CV_8UC1 );
     im2 = cv::Mat( img.rows, img.cols, CV_8UC1 );
     im3 = cv::Mat( img.rows, img.cols, CV_8UC1 );
 
     //boundary checks
-    y1 = std::max(0, y1);
-    y2 = std::min(img.rows-1, y2);
-    x1 = std::max(0, x1);
-    x2 = std::min(img.cols-1, x2);
+    const double y1 = std::max(0.0, initial.y);
+    const double y2 = std::min(img.rows-1.0, initial.y + initial.height);
+    const double x1 = std::max(0.0, initial.x);
+    const double x2 = std::min(img.cols-1.0, initial.x + initial.width);
 
     preprocessImage(img);
 
@@ -65,6 +65,9 @@ void ColorTracker::init(cv::Mat & img, int x1, int y1, int x2, int y2)
     bound1 = 0.05;
     bound2 = 0.1;
 
+    model = cv::Ptr<cv::TrackerModel>(new ColorTrackerModel());
+
+    return true;
 }
 
 cv::Point ColorTracker::histMeanShift(double x1, double y1, double x2, double y2)
@@ -379,10 +382,15 @@ cv::Point ColorTracker::histMeanShiftAnisotropicScale(double x1, double y1, doub
 
 
 
-BBox * ColorTracker::track(cv::Mat & img, double x1, double y1, double x2, double y2)
+bool ColorTracker::updateImpl(const cv::Mat & img, cv::Rect2d & boundingBox)
 {
-    double width = x2-x1;
-    double height = y2-y1;
+
+    double width = lastPosition.width;
+    double height = lastPosition.height;
+    double x1 = lastPosition.x;
+    double y1 = lastPosition.y;
+    double x2 = lastPosition.x + width;
+    double y2 = lastPosition.y + height;
 
     im1_old = im1.clone();
     im2_old = im2.clone();
@@ -424,15 +432,24 @@ BBox * ColorTracker::track(cv::Mat & img, double x1, double y1, double x2, doubl
         }
     }
 
-    BBox * retBB = new BBox();
-    retBB->setBBox(modeCenter.x - width/2, modeCenter.y - height/2, width, height, 1, 1);
-    lastPosition.setBBox(modeCenter.x - width/2, modeCenter.y - height/2, width, height, 1, 1);
+    boundingBox.x = modeCenter.x - width/2;
+    boundingBox.y = modeCenter.y - height/2;
+    boundingBox.width = width;
+    boundingBox.height = height;
+
+    lastPosition.x = modeCenter.x - width/2;
+    lastPosition.y = modeCenter.y - height/2;
+    lastPosition.width = width;
+    lastPosition.height = height;
+    lastPosition.accuracy = 1;
+    lastPosition.normCross = 1;
+
     frame++;
 
-    return retBB;
+    return true;
 }
 
-void ColorTracker::preprocessImage(cv::Mat &img)
+void ColorTracker::preprocessImage(const cv::Mat &img)
 {
     cv::Mat ra[3] = {im1, im2, im3};
     cv::split(img, ra);
